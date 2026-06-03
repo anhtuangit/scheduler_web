@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
 import { loginWithGoogle } from '../../store/slices/auth.slice';

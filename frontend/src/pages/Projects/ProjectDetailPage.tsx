@@ -34,8 +34,6 @@ import { toast } from 'react-toastify';
 
 const SortableColumn = ({ column, labels, canEdit, onCreateTask, onEditTask, onDeleteTask, onViewTask, onEditColumn, onDeleteColumn }: any) => {
   const {
-    attributes,
-    listeners,
     setNodeRef,
     transform,
     transition,

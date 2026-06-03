@@ -64,7 +64,7 @@ const LoginPage = () => {
 
     const handleCredentialResponse = async (response: { credential: string }) => {
       try {
-        const result = await dispatch(loginWithGoogle(response.credential)).unwrap();
+        await dispatch(loginWithGoogle(response.credential)).unwrap();
         toast.success('Đăng nhập thành công!');
         navigate('/tasks', { replace: true });
       } catch (error: any) {
