@@ -52,7 +52,11 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Connect to MongoDB using Mongoose defaults (queries will buffer during initial connection)
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18')
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18';
+const maskedUri = mongoUri.replace(/:([^@]+)@/, ':****@');
+console.log('🔌 Connecting to MongoDB URI:', maskedUri);
+
+mongoose.connect(mongoUri)
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
