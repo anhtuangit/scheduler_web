@@ -52,13 +52,45 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Connect to MongoDB using Mongoose defaults (queries will buffer during initial connection)
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18';
-const maskedUri = mongoUri.replace(/:([^@]+)@/, ':****@');
-console.log('🔌 Connecting to MongoDB URI:', maskedUri);
+let cachedPromise: Promise<typeof mongoose> | null = null;
 
-mongoose.connect(mongoUri)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+async function connectToDatabase() {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
+  }
+  
+  if (!cachedPromise) {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18';
+    const maskedUri = mongoUri.replace(/:([^@]+)@/, ':****@');
+    console.log('🔌 Connecting to MongoDB URI:', maskedUri);
+    
+    cachedPromise = mongoose.connect(mongoUri, {
+      bufferCommands: false,
+    }).then((m) => {
+      console.log('✅ MongoDB connection successful');
+      return m;
+    }).catch((err) => {
+      console.error('❌ MongoDB connection error:', err);
+      cachedPromise = null; // Reset cached promise on failure to retry later
+      throw err;
+    });
+  }
+  
+  return cachedPromise;
+}
+
+// Database connection middleware for Serverless environment
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (err) {
+    res.status(500).json({
+      message: 'Database connection failed',
+      error: err instanceof Error ? err.message : String(err)
+    });
+  }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
