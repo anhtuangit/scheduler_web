@@ -38,7 +38,7 @@ app.use(cookieParser());
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://nguyenanhtuan2004qb_db_user:Test123456@cluster0.eacnkfm.mongodb.net/schedule18?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
