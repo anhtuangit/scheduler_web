@@ -51,11 +51,33 @@ app.use(cookieParser());
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Pre-warm the connection on startup (asynchronously)
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18', {
   bufferCommands: false,
-})
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+}).catch((err) => console.error('❌ MongoDB pre-warm connection error:', err));
+
+// Database connection middleware for Serverless environment
+app.use(async (req, res, next) => {
+  // If already connected, proceed
+  if (mongoose.connection.readyState === 1) {
+    return next();
+  }
+  
+  try {
+    console.log('🔄 Connecting to MongoDB (via middleware)...');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/schedule18', {
+      bufferCommands: false,
+    });
+    console.log('✅ MongoDB connected (via middleware)');
+    next();
+  } catch (err) {
+    console.error('❌ MongoDB connection error in middleware:', err);
+    res.status(500).json({
+      message: 'Database connection failed',
+      error: err instanceof Error ? err.message : String(err)
+    });
+  }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
