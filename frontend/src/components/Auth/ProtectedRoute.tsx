@@ -1,0 +1,30 @@
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    console.log('⚠️ ProtectedRoute: Not authenticated, redirecting to login. isAuthenticated:', isAuthenticated, 'user:', user);
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export default ProtectedRoute;
+
